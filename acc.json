@@ -1,22 +1,4 @@
 {
     "Account": [
-        {
-            "link": "https://t.me/Pixel_AKT/30",
-            "cost": 140000,
-            "type": "Genshin Impact",
-            "id": 1
-        },
-        {
-            "link": "https://t.me/Pixel_AKT/15",
-            "cost": 180000,
-            "type": "Genshin Impact",
-            "id": 2
-        },
-        {
-            "link": "https://t.me/Pixel_AKT/28",
-            "cost": 65000,
-            "type": "Call of Duty mobile",
-            "id": 3
-        }
     ]
 }
