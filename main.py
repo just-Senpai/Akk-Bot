@@ -39,9 +39,29 @@ def main_menu(user_id):
         
     return markup
 
+import json
+
+# Foydalanuvchi ma'lumotlarini yuklash funksiyasi
+def user_load():
+    try:
+        with open('user.json', 'r', encoding='utf-8') as user_file:
+            return json.load(user_file)
+    except FileNotFoundError:
+        return {"users": []}
+
+# Foydalanuvchi ma'lumotlarini yangilash funksiyasi
+def user_save(users_data):
+    with open('user.json', 'w', encoding='utf-8') as user_file:
+        json.dump(users_data, user_file, ensure_ascii=False, indent=4)
+
 @bot.message_handler(commands=['start'])
 def start(message):
     if message.chat.type == 'private':
+        users_data = user_load()
+        if message.from_user.id not in users_data["users"]:
+            users_data["users"].append(message.from_user.id)
+            user_save(users_data)
+        
         bot.send_message(message.chat.id, 'Xush kelibsiz!', reply_markup=main_menu(message.from_user.id))
     else:
         bot.send_message(message.chat.id, 'Akkaunt qidiruv uchun botga o\'ting.')
@@ -218,14 +238,32 @@ def settings_handler(message):
     txt_button = types.KeyboardButton('📄 Txtlar')
     add_acc_button = types.KeyboardButton('➕ Akk qo\'shish')
     remove_acc_button = types.KeyboardButton('➖ Akk ayrish')
+    ad = types.KeyboardButton('📨 Reklama')
     back_button = types.KeyboardButton('🔙 Orqaga')
 
     settings_markup.add(admins_button)
     settings_markup.row(json_button, txt_button)
     settings_markup.row(add_acc_button, remove_acc_button)
+    settings_markup.row(ad)
     settings_markup.add(back_button)
 
     bot.send_message(message.chat.id, '⚙️ Sozlamalar:', reply_markup=settings_markup)
+
+
+@bot.message_handler(func=lambda message: message.text == '📨 Reklama' and message.from_user.id == OWNER_ID)
+def reklama_handler(message):
+    bot.send_message(message.chat.id, 'Iltimos, reklama xabarini yuboring (rasm, video, matn, gif, stik va hokazo):', reply_markup=types.ReplyKeyboardRemove())
+    bot.register_next_step_handler(message, forward_reklama_to_users)
+
+def forward_reklama_to_users(message):
+    users_data = user_load()
+    for user_id in users_data["users"]:
+        try:
+            bot.forward_message(user_id, message.chat.id, message.message_id)
+        except Exception as e:
+            print(f"Xatolik yuz berdi: {e}")
+    
+    bot.send_message(message.chat.id, 'Reklama xabari muvaffaqiyatli forward qilindi!', reply_markup=main_menu(message.from_user.id))
 
 import random
 
